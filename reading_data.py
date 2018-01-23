@@ -9,17 +9,14 @@ Part of the cousera assignment from data science with python project
 import pandas as pd
 
 def clean_univ_data(data):
-    state_names = list()
-    uni_towns = list()
+    names = list()
     for txt in data.split("\n"):
         if txt[-6:] == "[edit]":
             state = txt[:-6]
         else:
-            uni_towns.append(txt.split("(" )[0])
-            state_names.append(state)
-    df = pd.DataFrame([state_names, uni_towns]).T
-    df.columns = ["States", "University Towns"]
-    return df
+            names.append([state, txt.split("(" )[0]])
+    df = pd.DataFrame(names, columns = ["States", "University Towns"])
+    return df.drop(df.index.size-1)
 
 
 if __name__ == "__main__" :
