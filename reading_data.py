@@ -34,12 +34,52 @@ def get_list_of_university_towns():
 def get_GDP_values(quarter = True):
     if quarter:
         GDP = pd.read_excel("data/gdplev.xlsx", "Sheet1", header = 5, skiprows = 2, parse_cols = [4,6])
-        GDP.columns = ["Quarter year", "GDP in bi of 2009 dollars Quarter"]
+        GDP.columns = ["year", "GDP"]
     else:
         GDP = pd.read_excel("data/gdplev.xlsx", "Sheet1", header = 5, skiprows = 2, parse_cols = [0,2], skip_footer=195)
-        GDP.columns = ["year", "GDP in bi of 2009 dollars"]
+        GDP.columns = ["year", "GDP"]
     return GDP
-
+    
+def detect_recession(data):
+    flag1, flag2, flag3 = [False]*3
+    Q1, Q2, Q3 = [""]*3  
+    n_data = data.copy()
+    data.set_index("year", inplace = True)
+    data["recession"] = [False]*data.index.size
+    n_data.iloc[:,1] = n_data.iloc[:,1].diff()
+    ## remove first year
+    n_data.iloc[0,1] = 0
+    for index, frame in n_data.groupby("year"):
+        if flag1 :
+            if flag2 :
+                if flag3 :
+                    if frame.iloc[0,1] > 0:
+                        data.loc[Q1:index, "recession"] = [True]*4
+                    flag1 = False
+                    flag2 = False
+                    flag3 = False
+                else:
+                    if frame.iloc[0,1] > 0:
+                        flag3 = True
+                        #Q3 = index    
+                    else:
+                        flag1, flag2, flag3 = [False]*3
+            else:
+                if frame.iloc[0,1] < 0:
+                    flag2 = True
+                    #Q2 = index
+                else:
+                    flag2, flag3 = [False]*2
+                    Q1 = index
+        else:
+            if frame.iloc[0,1] < 0:
+                flag1 = True
+                Q1 = index
+            else:
+                flag1, flag2, flag3 = [False]*3
+                    
+    return data
 
 if __name__ == "__main__" :
-    print(get_GDP_values(quarter = False))
+    GDP = get_GDP_values()
+    GDP = detect_recession(GDP)
