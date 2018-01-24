@@ -204,10 +204,20 @@ def run_ttest():
     data_uni = data_uni[data_uni.loc[:,"_merge"] != "right_only" ]
     
     ## getting only recession start values
-    data_rec_uni = data_uni.loc[:,get_recession_start()].dropna()
-    data_rec_house = data_housing.loc[:,get_recession_start()].dropna()
+    
+    data_rec_uni = data_uni.loc[:,get_recession_start()]
+    data_rec_uni.columns = ["Q1","Q2","Q3"]
+    data_rec_house = data_housing.loc[:,get_recession_start()]
+    data_rec_house.columns = ["Q1","Q2","Q3"]
 
-    return stats.ttest_ind(data_rec_uni,data_rec_house, equal_var = False)
+    # recession bottom    
+    
+    data_bec_uni = data_uni.loc[:,get_recession_bottom()]
+    data_bec_uni.columns = ["Q1","Q2","Q3"]
+    data_bec_house = data_housing.loc[:,get_recession_bottom()]
+    data_bec_house.columns = ["Q1","Q2","Q3"]
+
+    return stats.ttest_ind( (data_rec_uni/data_bec_uni).dropna(), (data_rec_house/data_bec_house).dropna(), equal_var = False)
 
 if __name__ == "__main__" :
     print(run_ttest())
