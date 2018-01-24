@@ -7,6 +7,7 @@ Created on Tue Jan 23 13:11:43 2018
 Part of the cousera assignment from data science with python project
 """
 import pandas as pd
+from scipy import stats
 
 def get_list_of_university_towns():
     '''Returns a DataFrame of towns and the states they are in from the 
@@ -163,16 +164,16 @@ def convert_housing_data_to_quarters():
         year, month = period.split("-")
         if month == "01":
             ## we are in first quarter
-            quarter_data[year+"q1"] = housing_data.loc[:,year+"-01":year+"-03"].sum(axis = 1)
+            quarter_data[year+"Q1"] = housing_data.loc[:,year+"-01":year+"-03"].sum(axis = 1)
         if month == "04":
             ## we are in second quarter
-            quarter_data[year+"q2"] = housing_data.loc[:,year+"-04":year+"-06"].sum(axis = 1)
+            quarter_data[year+"Q2"] = housing_data.loc[:,year+"-04":year+"-06"].sum(axis = 1)
         if month == "07":
             ## we are in third quarter
-            quarter_data[year+"q3"] = housing_data.loc[:,year+"-07":year+"-09"].sum(axis = 1)
+            quarter_data[year+"Q3"] = housing_data.loc[:,year+"-07":year+"-09"].sum(axis = 1)
         if month == "07":
             ## we are in fourth quarter
-            quarter_data[year+"q4"] = housing_data.loc[:,year+"-10":year+"-12"].sum(axis = 1)
+            quarter_data[year+"Q4"] = housing_data.loc[:,year+"-10":year+"-12"].sum(axis = 1)
         #quarter_data.sort_values(["State", "RegionName"], inplace = True)
     return quarter_data.set_index(["State","RegionName"])
 
@@ -195,13 +196,19 @@ def run_ttest():
     
     ## reading the data values    
     data_uni = get_list_of_university_towns()
-    data_GDP = get_GDP_values()
-    data_housing = convert_housing_data_to_quarters()
+
+    data_uni = pd.merge(data_uni, convert_housing_data_to_quarters(), how='outer', right_index=True, left_on=['State', 'RegionName'], indicator=True)
     
-    data_uni = pd.merge(data_uni, data_housing, how='inner', right_index=True, left_on=['State', 'RegionName'])
+    ## separating values
+    data_housing = data_uni[data_uni.loc[:,"_merge"] != "left_only" ].copy()
+    data_uni = data_uni[data_uni.loc[:,"_merge"] != "right_only" ]
     
-    return data_uni
+    ## getting only recession start values
+    data_rec_uni = data_uni.loc[:,get_recession_start()].dropna()
+    data_rec_house = data_housing.loc[:,get_recession_start()].dropna()
+
+    return stats.ttest_ind(data_rec_uni,data_rec_house, equal_var = False)
 
 if __name__ == "__main__" :
-    data = run_ttest()
+    print(run_ttest())
 
