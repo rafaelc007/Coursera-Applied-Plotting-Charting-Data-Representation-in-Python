@@ -133,6 +133,46 @@ def get_recession_bottom():
         bottom.append(res_data.iloc[res_data.iloc[4*idx:4*idx+4,1].argmin(),0])
         
     return bottom
+    
+def convert_housing_data_to_quarters():
+    '''Converts the housing data to quarters and returns it as mean 
+    values in a dataframe. This dataframe should be a dataframe with
+    columns for 2000q1 through 2016q3, and should have a multi-index
+    in the shape of ["State","RegionName"].
+    
+    Note: Quarters are defined in the assignment description, they are
+    not arbitrary three month periods.
+    
+    The resulting dataframe should have 67 columns, and 10,730 rows.
+    '''
+    
+    ## reading the data
+    housing_data = pd.read_csv("data/City_Zhvi_AllHomes.csv")
+    
+    ## getting data from year 2000 onward
+    drop_cols = housing_data.loc[:,"1996-04":"1999-12"].columns
+    housing_data = housing_data.drop(drop_cols, axis = 1)
+    
+    ## determining quarters
+    quarter_data = housing_data.loc[:,["State","RegionName"]].copy()
+    for period in housing_data.loc[:,"2000-01":].columns[::3]:
+        year, month = period.split("-")
+        if month == "01":
+            ## we are in first quarter
+            quarter_data[year+"q1"] = housing_data.loc[:,year+"-01":year+"-03"].sum(axis = 1)
+        if month == "04":
+            ## we are in second quarter
+            quarter_data[year+"q2"] = housing_data.loc[:,year+"-04":year+"-06"].sum(axis = 1)
+        if month == "07":
+            ## we are in third quarter
+            quarter_data[year+"q3"] = housing_data.loc[:,year+"-07":year+"-09"].sum(axis = 1)
+        if month == "07":
+            ## we are in fourth quarter
+            quarter_data[year+"q4"] = housing_data.loc[:,year+"-10":year+"-12"].sum(axis = 1)
+    return quarter_data.set_index(["State","RegionName"])
+
+
 
 if __name__ == "__main__" :
-    print(get_recession_bottom())
+    quarter_data = convert_housing_data_to_quarters()
+    
