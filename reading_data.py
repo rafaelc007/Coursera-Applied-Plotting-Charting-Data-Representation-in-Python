@@ -146,6 +146,8 @@ def convert_housing_data_to_quarters():
     The resulting dataframe should have 67 columns, and 10,730 rows.
     '''
     
+    states = {'OH': 'Ohio', 'KY': 'Kentucky', 'AS': 'American Samoa', 'NV': 'Nevada', 'WY': 'Wyoming', 'NA': 'National', 'AL': 'Alabama', 'MD': 'Maryland', 'AK': 'Alaska', 'UT': 'Utah', 'OR': 'Oregon', 'MT': 'Montana', 'IL': 'Illinois', 'TN': 'Tennessee', 'DC': 'District of Columbia', 'VT': 'Vermont', 'ID': 'Idaho', 'AR': 'Arkansas', 'ME': 'Maine', 'WA': 'Washington', 'HI': 'Hawaii', 'WI': 'Wisconsin', 'MI': 'Michigan', 'IN': 'Indiana', 'NJ': 'New Jersey', 'AZ': 'Arizona', 'GU': 'Guam', 'MS': 'Mississippi', 'PR': 'Puerto Rico', 'NC': 'North Carolina', 'TX': 'Texas', 'SD': 'South Dakota', 'MP': 'Northern Mariana Islands', 'IA': 'Iowa', 'MO': 'Missouri', 'CT': 'Connecticut', 'WV': 'West Virginia', 'SC': 'South Carolina', 'LA': 'Louisiana', 'KS': 'Kansas', 'NY': 'New York', 'NE': 'Nebraska', 'OK': 'Oklahoma', 'FL': 'Florida', 'CA': 'California', 'CO': 'Colorado', 'PA': 'Pennsylvania', 'DE': 'Delaware', 'NM': 'New Mexico', 'RI': 'Rhode Island', 'MN': 'Minnesota', 'VI': 'Virgin Islands', 'NH': 'New Hampshire', 'MA': 'Massachusetts', 'GA': 'Georgia', 'ND': 'North Dakota', 'VA': 'Virginia'}
+    
     ## reading the data
     housing_data = pd.read_csv("data/City_Zhvi_AllHomes.csv")
     
@@ -155,6 +157,8 @@ def convert_housing_data_to_quarters():
     
     ## determining quarters
     quarter_data = housing_data.loc[:,["State","RegionName"]].copy()
+    quarter_data.replace({"State":states}, inplace = True)
+    
     for period in housing_data.loc[:,"2000-01":].columns[::3]:
         year, month = period.split("-")
         if month == "01":
@@ -172,7 +176,30 @@ def convert_housing_data_to_quarters():
     return quarter_data.set_index(["State","RegionName"])
 
 
+def run_ttest():
+    '''First creates new data showing the decline or growth of housing prices
+    between the recession start and the recession bottom. Then runs a ttest
+    comparing the university town values to the non-university towns values, 
+    return whether the alternative hypothesis (that the two groups are the same)
+    is true or not as well as the p-value of the confidence. 
+    
+    Return the tuple (different, p, better) where different=True if the t-test is
+    True at a p<0.01 (we reject the null hypothesis), or different=False if 
+    otherwise (we cannot reject the null hypothesis). The variable p should
+    be equal to the exact p value returned from scipy.stats.ttest_ind(). The
+    value for better should be either "university town" or "non-university town"
+    depending on which has a lower mean price ratio (which is equivilent to a
+    reduced market loss).'''
+    
+    
+    ## reading the data values    
+    data_uni = get_list_of_university_towns()
+    data_GDP = get_GDP_values()
+    data_housing = convert_housing_data_to_quarters()
+
+    
+    return "ANSWER"
 
 if __name__ == "__main__" :
-    quarter_data = convert_housing_data_to_quarters()
+    run_ttest()
     
