@@ -27,8 +27,8 @@ def get_list_of_university_towns():
             if txt[-6:] == "[edit]":
                 state = txt[:-6]
             else:
-                names.append([state, txt.split("(" )[0]])
-        df = pd.DataFrame(names, columns = ["States", "University Towns"])
+                names.append([state, txt.split(" (" )[0]])
+        df = pd.DataFrame(names, columns = ["State", "RegionName"])
     return df.drop(df.index.size-1)
     
 def get_GDP_values(quarter = True):
@@ -173,6 +173,7 @@ def convert_housing_data_to_quarters():
         if month == "07":
             ## we are in fourth quarter
             quarter_data[year+"q4"] = housing_data.loc[:,year+"-10":year+"-12"].sum(axis = 1)
+        #quarter_data.sort_values(["State", "RegionName"], inplace = True)
     return quarter_data.set_index(["State","RegionName"])
 
 
@@ -196,10 +197,11 @@ def run_ttest():
     data_uni = get_list_of_university_towns()
     data_GDP = get_GDP_values()
     data_housing = convert_housing_data_to_quarters()
-
     
-    return "ANSWER"
+    data_uni = pd.merge(data_uni, data_housing, how='inner', right_index=True, left_on=['State', 'RegionName'])
+    
+    return data_uni
 
 if __name__ == "__main__" :
-    run_ttest()
-    
+    data = run_ttest()
+
