@@ -117,7 +117,22 @@ def get_recession_end():
             end.append(res_data.index[idx+3])
         
     return end
-    return "ANSWER"
+    
+def get_recession_bottom():
+    '''Returns the year and quarter of the recession bottom time as a 
+    string value in a format such as 2005q3'''
+    data = detect_recession(get_GDP_values(), True)
+    
+    ## separate recession data
+    res_data = data[data.loc[:,"recession"]].copy()
+    res_data.reset_index(inplace = True)
+    
+    ## returning the end
+    bottom = list()
+    for idx in range(0, int(res_data.index.size/4)):
+        bottom.append(res_data.iloc[res_data.iloc[4*idx:4*idx+4,1].argmin(),0])
+        
+    return bottom
 
 if __name__ == "__main__" :
-    print(get_recession_end())
+    print(get_recession_bottom())
