@@ -40,12 +40,20 @@ def get_GDP_values(quarter = True):
         GDP.columns = ["year", "GDP"]
     return GDP
     
-def detect_recession(data):
+def detect_recession(data, cut_before_2000 = False):
+    ## use data from year 2000 onwards
+    if cut_before_2000:
+        data = data.iloc[212:]
+    
     flag1, flag2, flag3 = [False]*3
-    Q1, Q2, Q3 = [""]*3  
+    Q1 = ""
+    ## copying data and setting index
     n_data = data.copy()
     data.set_index("year", inplace = True)
+    
+    ## create new recession column
     data["recession"] = [False]*data.index.size
+    ## get difference between lines in data
     n_data.iloc[:,1] = n_data.iloc[:,1].diff()
     ## remove first year
     n_data.iloc[0,1] = 0
@@ -60,14 +68,12 @@ def detect_recession(data):
                     flag3 = False
                 else:
                     if frame.iloc[0,1] > 0:
-                        flag3 = True
-                        #Q3 = index    
+                        flag3 = True  
                     else:
                         flag1, flag2, flag3 = [False]*3
             else:
                 if frame.iloc[0,1] < 0:
                     flag2 = True
-                    #Q2 = index
                 else:
                     flag2, flag3 = [False]*2
                     Q1 = index
@@ -79,7 +85,22 @@ def detect_recession(data):
                 flag1, flag2, flag3 = [False]*3
                     
     return data
+    
+def get_recession_start():
+    '''Returns the year and quarter of the recession start time as a 
+    string value in a format such as 2005q3'''
+    data = detect_recession(get_GDP_values(), True)
+    
+    ## separate recession data
+    res_data = data[data.loc[:,"recession"]].copy()
+    
+    ## returning the start
+    start = list()
+    for idx in range(0, res_data.index.size):
+        if idx % 4 == 0:
+            start.append(res_data.index[idx])
+        
+    return start
 
 if __name__ == "__main__" :
-    GDP = get_GDP_values()
-    GDP = detect_recession(GDP)
+    print(get_recession_start())
